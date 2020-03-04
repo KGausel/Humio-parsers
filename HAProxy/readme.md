@@ -45,3 +45,4 @@ Feb  6 12:12:56 localhost haproxy[14387]: 10.0.1.2:33313 [06/Feb/2009:12:12:51.4
 * [TCP format information](https://www.haproxy.com/documentation/hapee/2-0r1/onepage/#8.2.2)
 * [HTTP format information](https://www.haproxy.com/documentation/hapee/2-0r1/onepage/#8.2.3)
 * [Error format information](https://www.haproxy.com/documentation/hapee/2-0r1/onepage/#8.2.5)
+* [Blog: Introduction to HAProxy Logging](https://www.haproxy.com/blog/introduction-to-haproxy-logging/)
