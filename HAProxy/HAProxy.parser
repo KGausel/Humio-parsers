@@ -1,0 +1,21 @@
+// This is the default log format used by HAProxy, if you make changes to it, you need to adapt it
+case {
+// TCP format information https://www.haproxy.com/documentation/hapee/1-8r1/onepage/#8.2.2
+/^(<(?<priority>\d+)>)?(?<@timestamp>\S+\s+\S+\s+\S+)\s+(?<host>\S+)\s+(?<process_name>[^\s\[:]+)\[(?<pid>[^\]]+)\]:\s+(?<client_ip>[^: ]+)(:(?<client_port>\S+))?\s+\[(?<accept_date>[^\]]+)\]\s+(?<frontend>[^\s\~]+)(?<tls>\~)?\s+(?<backend>[^\/]+)\/(?<server>\S+)\s+(?<timers>\S+)\s+(?<bytes_read>\S+)\s+(?<termination_state>\S+)\s+(?<actconn>[^\s\/]+)\/(?<feconn>[^\s\/]+)\/(?<beconn>[^\s\/]+)\/(?<src_conn>[^\s\/]+)\/(?<retries>[^\s\/]+)\s+(?<srv_queue>[^\s\/]+)\/(?<backend_queue>[^\s\/]+)/ 
+  | type := "tcp";
+
+// HTTP format information https://www.haproxy.com/documentation/hapee/1-8r1/onepage/#8.2.3
+/^(<(?<priority>\d+)>)?(?<@timestamp>\S+\s+\S+\s+\S+)\s+(?<host>\S+)\s+(?<process_name>[^\s\[:]+)\[(?<pid>[^\]]+)\]:\s+(?<client_ip>[^: ]+)(:(?<client_port>\S+))?\s+\[(?<accept_date>[^\]]+)\]\s+(?<frontend>[^\s\~]+)(?<tls>\~)?\s+(?<backend>[^\/]+)\/(?<server>\S+)\s+(?<timers>\S+)\s+(?<status_code>\S+)\s+(?<bytes_read>\S+)\s+(?<caputred_request_cookie>\S+)\s+(?<caputred_response_cookie>\S+)\s+(?<termination_state>\S+)\s+(?<actconn>[^\s\/]+)\/(?<feconn>[^\s\/]+)\/(?<beconn>[^\s\/]+)\/(?<src_conn>[^\s\/]+)\/(?<retries>[^\s\/]+)\s+(?<srv_queue>[^\s\/]+)\/(?<backend_queue>[^\s\/]+)\s+(\{(?<captured_request_headers>[^\}\{]*)\}\s+(\{(?<captured_response_headers>[^}]*)\}\s+)?)?\"(?<http_request>.*)\"/
+ | type := "http";
+
+// Error format information
+/^(<(?<priority>\d+)>)?(?<@timestamp>\S+\s+\S+\s+\S+)\s+(?<host>\S+)\s+(?<process_name>[^\s\[:]+)\[(?<pid>[^\]]+)\]:\s+(?<client_ip>[^: ]+)(:(?<client_port>\S+))?\s+\[(?<accept_date>[^\]]+)\]\s+(?<frontend>[^\/]+)\/(?<bind_name>[^\s:]+):\s*(?<message>.*)/
+  | type := "error";
+
+}
+| case {
+  // https://haproxy.formilux.narkive.com/vv7Pbj00/tilde-in-haproxy-1-5-log
+  tls="~" | tls:="true";
+  * | tls:="false"
+}
+| parseTimestamp("MMM [ ]d HH:mm:ss", field=@timestamp, timezone="CET")
