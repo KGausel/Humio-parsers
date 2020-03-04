@@ -1,7 +1,12 @@
 # HAProxy Parser
+
 This parser works for HAProxy, tested with documentation examples and a HAProxy instance running version 2.1
 
 There might be missing types, and if you have customized the logs in any way this may not work.
+
+# Important
+
+You have to change the timezone in the `parseTimestamp` line unless you are logging in UTC
 
 # Tests
 ```
