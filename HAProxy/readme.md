@@ -4,6 +4,12 @@ This parser works for HAProxy, tested with documentation examples and a HAProxy 
 
 There might be missing types, and if you have customized the logs in any way this may not work.
 
+
+Because of limits in syslog, the `http_request` field may be truncated, in this case the field `truncated` will be set to `true`.
+
+
+Sometimes the `http_request` field contains garbage, I am assuming this comes from bad requests. To find cases of this you can run the search `http_request=* method!=*` as the method and path will not be parsed in this situation.
+
 # Important
 
 You have to change the timezone in the `parseTimestamp` line unless you are logging in UTC
