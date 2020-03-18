@@ -1,0 +1,49 @@
+// Log format documentation
+//    https://docs.netgate.com/pfsense/en/latest/monitoring/filter-log-format-for-pfsense-2-2.html
+
+/(<(?<priority>\d+)>)?(?<ts>\S+\s+\d+\s+\d+:\d+:\d+)\s+(?<logtype>[^:]+):\s+(?<csvdata>.*)/
+| parsecsv(csvdata, columns=[_1, _2, _3, _4, _5, _6, _7, _8, _ip_version, _10, _11, _12, _13, _ipv6_protocol_id, _15, _ipv4_protocol_id, _17, _ipv6_icmp_type, _19, _20, _ipv4_icmp_type])
+
+| case {
+  // IPv4 TCP
+  _ip_version=4 _ipv4_protocol_id=6
+      | parsecsv(csvdata, columns=[rule_number, sub_rule_number, anchor, tracker, real_interface, reason, action, direction, ip_version, tos, ecn, ttl, id, offset, flags, protocol_id, protocol, length, src_ip, dst_ip]);
+
+  // IPv4 UDP
+  _ip_version=4 _ipv4_protocol_id=17
+      | parsecsv(csvdata, columns=[rule_number, sub_rule_number, anchor, tracker, real_interface, reason, action, direction, ip_version, tos, ecn, ttl, id, offset, flags, protocol_id, protocol, length, src_ip, dst_ip, src_port, dst_port, data_length]);
+
+  // IPv4 ICMP
+  //TODO: additional branching based on _ipv4_icmp_type
+  _ip_version=4 _ipv4_protocol_id=1
+      | parsecsv(csvdata, columns=[rule_number, sub_rule_number, anchor, tracker, real_interface, reason, action, direction, ip_version, tos, ecn, ttl, id, offset, flags, protocol_id, protocol, length, src_ip, dst_ip, icmp_type]);
+
+  // Remaining IPv4
+  _ip_version=4
+      | parsecsv(csvdata, columns=[rule_number, sub_rule_number, anchor, tracker, real_interface, reason, action, direction, ip_version, tos, ecn, ttl, id, offset, flags, protocol_id, protocol, length, src_ip, dst_ip]);
+
+  // IPv6 TCP
+  _ip_version=6 _ipv6_protocol_id=6 
+      | parsecsv(csvdata, columns=[rule_number, sub_rule_number, anchor, tracker, real_interface, reason, action, direction, ip_version, class, flow_label, hop_limit, protocol, protocol_id, length, src_ip, dst_ip, src_port, dst_port, data_length, tcp_flags, seq_number, ack, window, urg, options]);
+
+  // IPv6 UDP
+  _ip_version=6 _ipv6_protocol_id=17
+      | parsecsv(csvdata, columns=[rule_number, sub_rule_number, anchor, tracker, real_interface, reason, action, direction, ip_version, class, flow_label, hop_limit, protocol, protocol_id, length, src_ip, dst_ip, src_port, dst_port, data_length]);
+
+  // IPv6 ICMP
+  //TODO: additional branching based on _ipv6_icmp_type
+  _ip_version=6 _ipv6_protocol_id=1
+      | parsecsv(csvdata, columns=[rule_number, sub_rule_number, anchor, tracker, real_interface, reason, action, direction, ip_version, class, flow_label, hop_limit, protocol, protocol_id, length, src_ip, dst_ip, icmp_type]);
+
+  // Remaining IPv6
+  _ip_version=6
+      | parsecsv(csvdata, columns=[rule_number, sub_rule_number, anchor, tracker, real_interface, reason, action, direction, ip_version, class, flow_label, hop_limit, protocol, protocol_id, length, src_ip, dst_ip]);
+
+  // Anything else
+  *
+}
+
+// Remove the fields used to determine branching
+| drop([_ip_version, _ipv6_protocol_id, _ipv4_protocol_id, _ipv6_icmp_type, _ipv4_icmp_type, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20])
+// Parse the syslog timestamp
+| parsetimestamp(format="LLL [ ]d HH:mm:ss", field=ts, timezone="Europe/Copenhagen")
