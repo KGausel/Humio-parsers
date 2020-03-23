@@ -46,4 +46,4 @@
 // Remove the fields used to determine branching
 | drop([_ip_version, _ipv6_protocol_id, _ipv4_protocol_id, _ipv6_icmp_type, _ipv4_icmp_type, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20])
 // Parse the syslog timestamp
-| parsetimestamp(format="LLL [ ]d HH:mm:ss", field=ts, timezone="Europe/Copenhagen")
+| parsetimestamp(format="LLL [ ]d HH:mm:ss", field=ts, timezone="UTC")
